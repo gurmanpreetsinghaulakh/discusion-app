@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion App</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f1f1;
+        }
+
+        .navbar {
+            background-color: #1abc9c;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 60px); 
+            padding-top: 60px; 
+        }
+
+        .left-pane, .right-pane {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .left-pane {
+            background-color: #ffffff;
+            color: white;
+            border-right: 2px solid #1abc9c;
+        }
+
+        .right-pane {
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        .question-box {
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #34495e;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .question-box:hover {
+            background-color: #1abc9c;
+        }
+
+        .question-form, .response-form {
+            margin-bottom: 30px;
+        }
+
+        .question-form input, .response-form input,
+        .question-form textarea, .response-form textarea {
+            width: 95%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #ecf0f1;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #1abc9c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #16a085;
+        }
+
+        #response-list p {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        h2, h3 {
+            color: #34495e;
+        }
+
+        h3 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        @media(max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .right-pane {
+                margin-right: 0;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        Discussion App
+    </div>
+
+    <div class="container">
+        <div class="left-pane" id="question-list">
+            <h2>Questions</h2>
+        </div>
+        <div class="right-pane">
+            <div class="question-form">
+                <h2>Ask a Question</h2>
+                <input type="text" id="title" placeholder="Enter Title" required />
+                <textarea id="question" placeholder="Type your question here" required></textarea>
+                <button onclick="submitQuestion()">Submit Question</button>
+            </div>
+            <div id="question-details">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+
+        function submitQuestion() {
+            const title = document.getElementById('title').value;
+            const question = document.getElementById('question').value;
+
+            if (title && question) {
+                const newQuestion = {
+                    title,
+                    question,
+                    responses: []
+                };
+                questions.push(newQuestion);
+                updateQuestionList();
+
+                document.getElementById('title').value = '';
+                document.getElementById('question').value = '';
+            } else {
+                alert("Both title and question are required!");
+            }
+        }
+
+        function updateQuestionList() {
+            const questionList = document.getElementById('question-list');
+            questionList.innerHTML = '<h2>Questions</h2>';  // Add the header
+
+            questions.forEach((q, index) => {
+                const questionBox = document.createElement('div');
+                questionBox.classList.add('question-box');
+                questionBox.textContent = q.title;
+                questionBox.onclick = () => showQuestionDetails(index);
+                questionList.appendChild(questionBox);
+            });
+        }
+
+        function showQuestionDetails(index) {
+            const questionDetails = document.getElementById('question-details');
+            const question = questions[index];
+
+            questionDetails.innerHTML = `
+                <h2>${question.title}</h2>
+                <p>${question.question}</p>
+                <div class="response-form">
+                    <input type="text" id="name" placeholder="Your Name" required />
+                    <textarea id="comment" placeholder="Your Comment" required></textarea>
+                    <button onclick="submitResponse(${index})">Submit Response</button>
+                </div>
+                <h3>Responses</h3>
+                <div id="response-list">
+                    ${question.responses.map(res => `<p><strong>${res.name}</strong>: ${res.comment}</p>`).join('')}
+                </div>
+                <button onclick="resolveQuestion(${index})" style="background-color: #e74c3c;">Resolve</button>
+            `;
+        }
+
+        function submitResponse(index) {
+            const name = document.getElementById('name').value;
+            const comment = document.getElementById('comment').value;
+
+            if (name && comment) {
+                const newResponse = {
+                    name,
+                    comment
+                };
+                questions[index].responses.push(newResponse);
+                showQuestionDetails(index); 
+            } else {
+                alert("Both name and comment are required!");
+            }
+        }
+
+        function resolveQuestion(index) {
+            questions.splice(index, 1); 
+            updateQuestionList(); 
+            document.getElementById('question-details').innerHTML = '';  
+        }
+    </script>
+
+</body>
+</html>
